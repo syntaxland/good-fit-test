@@ -1,35 +1,53 @@
 # Qlay Good Fit Test — Driver Profile Extraction & Load Matching
 
 ## How to Run
+
 ```bash
 python3 solution.py
 ```
+
 No dependencies beyond the Python standard library.
 
+---
+
 ## Part A — Extraction Assumptions
+
 Profile fields were inferred from dispatcher/driver dialogue, not stated explicitly:
-- **Current location**: driver says *"I'm in Dallas"*
-- **Home base**: dispatcher confirms *"you're based out in San Antonio"*
-- **Min rate/mile**: driver says *"above $2 per mile"* → set to $2.00
-- **Equipment**: driver asks about *"hotshots, flatbeds, goosenecks"*; dispatcher confirms all three → three equipment types extracted
-- **Weight capacity**: driver asks about a 44,000 lb load without objecting → 44,000 lb
+
+| Field | Evidence from conversation |
+|---|---|
+| Current location | Driver says *"I'm in Dallas"* |
+| Home base | Dispatcher confirms *"you're based out in San Antonio"* |
+| Min rate/mile | Driver says *"above $2 per mile"* → set to $2.00 |
+| Equipment | Driver asks about *"hotshots, flatbeds, goosenecks"*; dispatcher confirms all three |
+| Weight capacity | Driver asks about a 44,000 lb load without objecting → 44,000 lb |
+
+---
 
 ## Part B — Ranking Logic
-`effective_rate = price ÷ (deadhead_to_origin + loaded_miles)`
 
-All distances are straight-line haversine from provided lat/lon coordinates.
+```
+effective_rate = price ÷ (deadhead_to_origin + loaded_miles)
+```
+
+All distances are straight-line haversine from provided lat/lon coordinates.  
 Driver's current location (Dallas) is used as deadhead origin.
 
 **Ineligible loads excluded before ranking:**
-- L01, L04, L06: Van trailer — driver does not run Vans
-- L06: Also overweight (46,500 lb > 44,000 lb) and price missing
-- L07: Destination missing — loaded miles incalculable
+
+| Load | Reason |
+|---|---|
+| L01, L04 | Van trailer — driver does not run Vans |
+| L06 | Van trailer + overweight (46,500 lb > 44,000 lb) + price MISSING |
+| L07 | Destination MISSING — loaded miles incalculable |
 
 **Top 3 results:** L03 ($4.239/mi) → L08 ($3.678/mi) → L02 ($3.090/mi)
 
+---
 
-**Run Command:**
-jb@bosco:~/Documents/dev/others/good-fit-test$ python3 solution.py
+## Sample Output
+
+```
 =================================================================
 PART A — DRIVER PROFILE
 =================================================================
@@ -87,3 +105,4 @@ PART B — TOP 3 LOADS (ranked by effective rate/mile)
     Eff. Rate     : $3.090/mi
 
   (Rank 4 — not in top 3: L05 @ $2.514/mi)
+```
